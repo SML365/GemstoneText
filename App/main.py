@@ -1,8 +1,79 @@
 # --- Import Modules --- #
 
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QPlainTextEdit, QVBoxLayout
+from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QColor
+from PySide6.QtCore import QRegularExpression
 
+# --- Define Direct+ Syntax Highlighter --- #
+class DirectHighlighter(QSyntaxHighlighter):
+    def __init__(self, document):
+        super().__init__(document)
+
+        self.keyword_format = QTextCharFormat()
+        self.keyword_format.setForeground(QColor("#f4d37b"))
+
+        self.argument_format = QTextCharFormat()
+        self.argument_format.setForeground(QColor("#479fe1"))
+
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor("#70c501"))
+
+        self.rules = [
+            (
+                QRegularExpression(r"\b(paste|var|run|add|sub|mul|div|if|loop|length|concat|letter|contains|console|wait|random|hash|slice|enter|delete|replace|item|numof|use|break|sqrt|round|mod|color|else|type|exists|turbo|scope|build)\b"),
+                self.keyword_format,
+            ),
+
+            (
+                QRegularExpression(r"\b()\b"),
+                self.argument_format,
+            )
+        ]
+
+    def highlightBlock(self, text):
+        for expression, fmt in self.rules:
+            it = expression.globalMatch(text)
+
+            while it.hasNext():
+                match = it.next()
+                self.setFormat(
+                    match.capturedStart(),
+                    match.capturedLength(),
+                    fmt,
+                )
+
+        i = 0
+        in_string = False
+        in_argument = False
+
+        while i < len(text):
+            char = text[i]
+
+            if char == "(":
+                in_argument = True
+
+            if char == ")":
+                in_argument = False
+
+            if in_argument or char == ")" and not in_string:
+                self.setFormat(
+                    i,
+                    1,
+                    self.argument_format,
+                )
+
+            if char == '"':
+                in_string = not in_string
+            
+            if in_string or char == '"':
+                self.setFormat(
+                    i,
+                    1,
+                    self.string_format,
+                )
+
+            i += 1
 
 # --- Define Main Application Window --- #
 class App(QMainWindow):
@@ -22,7 +93,32 @@ class App(QMainWindow):
 
 # --- Text Editor Page --- #
 class Editor(QWidget):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        self.text_editor = QPlainTextEdit()
+        self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
+
+        self.text_editor.setStyleSheet(
+            """
+                QWidget
+                {
+                    border: none;
+                    background-color: #1c1c1c;
+                    font-family: Consolas;
+                    font-size: 32px;
+                }
+            """
+        )
+
+        self.syntax_highlighter = DirectHighlighter(
+            self.text_editor.document()
+        )
+
+        editor_layout = QVBoxLayout()
+        editor_layout.addWidget(self.text_editor)
+        self.setLayout(editor_layout)
+            
 
 # --- Main Loop --- #
 if __name__ == "__main__":
