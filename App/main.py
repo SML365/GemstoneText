@@ -19,6 +19,12 @@ class DirectHighlighter(QSyntaxHighlighter):
         self.string_format = QTextCharFormat()
         self.string_format.setForeground(QColor("#70c501"))
 
+        self.variable_format = QTextCharFormat()
+        self.variable_format.setForeground(QColor("#ff6eff"))
+
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor("#8e8e8e"))
+
         self.rules = [
             (
                 QRegularExpression(r"\b(paste|var|run|add|sub|mul|div|if|loop|length|concat|letter|contains|console|wait|random|hash|slice|enter|delete|replace|item|numof|use|break|sqrt|round|mod|color|else|type|exists|turbo|scope|build)\b"),
@@ -46,31 +52,56 @@ class DirectHighlighter(QSyntaxHighlighter):
         i = 0
         in_string = False
         in_argument = False
+        in_variable = False
+        in_comment = False
 
         while i < len(text):
             char = text[i]
 
-            if char == "(":
+            if char == "$":
+                in_comment = True
+
+            if in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.comment_format,
+                )
+
+            if char == "(" and not in_comment:
                 in_argument = True
 
             if char == ")":
                 in_argument = False
 
-            if in_argument or char == ")" and not in_string:
+            if in_argument or char == ")" and not in_string and not in_comment:
                 self.setFormat(
                     i,
                     1,
                     self.argument_format,
                 )
 
-            if char == '"':
+            if char == '"' and not in_comment:
                 in_string = not in_string
             
-            if in_string or char == '"':
+            if in_string or char == '"' and not in_comment:
                 self.setFormat(
                     i,
                     1,
                     self.string_format,
+                )
+
+            if char == "@" and not in_comment:
+                in_variable = True
+
+            if char in r'()[]{},. "':
+                in_variable = False
+
+            if in_variable and not in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.variable_format,
                 )
 
             i += 1
