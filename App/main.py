@@ -28,16 +28,14 @@ class DirectHighlighter(QSyntaxHighlighter):
         self.comment_format = QTextCharFormat()
         self.comment_format.setForeground(QColor("#8e8e8e"))
 
+        self.block_label_operator_format = QTextCharFormat()
+        self.block_label_operator_format.setForeground(QColor("#fa5f58"))
+
         self.rules = [
             (
                 QRegularExpression(r"\b(paste|var|run|add|sub|mul|div|if|loop|length|concat|letter|contains|console|wait|random|hash|slice|enter|delete|replace|item|numof|use|break|sqrt|round|mod|color|else|type|exists|turbo|scope|build)\b"),
                 self.keyword_format,
             ),
-
-            (
-                QRegularExpression(r"\b()\b"),
-                self.argument_format,
-            )
         ]
 
     def highlightBlock(self, text):
@@ -124,6 +122,13 @@ class DirectHighlighter(QSyntaxHighlighter):
                     self.double_variable_format,
                 )
 
+            if char in "+-*/=<>!" and not in_string and not in_variable:
+                self.setFormat(
+                    i,
+                    1,
+                    self.block_label_operator_format,
+                )
+
             i += 1
 
 # --- Define Main Application Window --- #
@@ -157,6 +162,7 @@ class Editor(QWidget):
 
         self.text_editor = QPlainTextEdit()
         self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
+        self.text_editor.setTabChangesFocus(False)
 
         self.text_editor.setStyleSheet(
             """
@@ -173,6 +179,8 @@ class Editor(QWidget):
         self.syntax_highlighter = DirectHighlighter(
             self.text_editor.document()
         )
+
+        cursor = self.text_editor.textCursor()
 
         editor_layout = QVBoxLayout()
         editor_layout.addWidget(self.text_editor)
