@@ -202,6 +202,9 @@ class PythonHighlighter(QSyntaxHighlighter):
 
         self.post_keyword_format = QTextCharFormat()
         self.post_keyword_format.setForeground(QColor("#01bf78"))
+
+        self.colon_format = QTextCharFormat()
+        self.colon_format.setForeground(QColor("#FFFFFF"))
         
         self.rules = [
             (
@@ -213,23 +216,12 @@ class PythonHighlighter(QSyntaxHighlighter):
                 self.pre_keyword_format,
             ),
             (
-                QRegularExpression(r"\b(and|or|not|is|in|True|False|None|)\b"),
+                QRegularExpression(r"\b(and|or|not|is|in|True|False|None|int|float|complex|str|dict|set|frozenset|bool|bytes|bytearray|memoryview|NoneType)\b"),
                 self.post_keyword_format,
             )
         ]
 
     def highlightBlock(self, text):
-        for expression, fmt in self.rules:
-            it = expression.globalMatch(text)
-
-            while it.hasNext():
-                match = it.next()
-                self.setFormat(
-                    match.capturedStart(),
-                    match.capturedLength(),
-                    fmt,
-                )
-
         i = 0
         in_string = False
         in_argument = False
@@ -301,30 +293,45 @@ class PythonHighlighter(QSyntaxHighlighter):
                     self.operator_format,
                 )
 
+            if char == "f" and text[i - 1] == "l" and text[i - 2] == "e" and text[i - 3] == "s" and not in_comment and not in_string:
+                self.setFormat(
+                    i - 3,
+                    4,
+                    self.post_keyword_format,
+                )
+
             i += 1
 
-        if "class" in text and not in_string and not in_comment:
-            class_index = text.index("class")
-            self.setFormat(
-                class_index + len("class"),
-                text.index("(") - len("class") if "(" in text else len(text),
-                self.function_format,
-            )
+        if not in_string and not in_comment:
+            function_matcher = QRegularExpression(r"\b(def|class)\s+([A-Za-z_][A-Za-z0-9_]*)")
+            function_it = function_matcher.globalMatch(text)
 
-        if "def" in text and not in_string and not in_comment:
-            def_index = text.index("def")
-            self.setFormat(
-                def_index + len("def"),
-                text.index("(") - len("def") if "(" in text else len(text),
-                self.function_format,
-            )
-        
+            while function_it.hasNext():
+                match = function_it.next()
+                self.setFormat(
+                    match.capturedStart(2),
+                    match.capturedLength(2),
+                    self.function_format,
+                )
+
         if ":" in text and not in_string and not in_comment:
             self.setFormat(
                 text.rindex(":"),
                 1,
-                self.post_keyword_format
+                self.colon_format
             )
+
+        if not in_string and not in_comment:
+            for expression, fmt in self.rules:
+                it = expression.globalMatch(text)
+
+                while it.hasNext():
+                    match = it.next()
+                    self.setFormat(
+                        match.capturedStart(),
+                        match.capturedLength(),
+                        fmt,
+                    )
 
 # --- Define Main Application Window --- #
 class App(QMainWindow):
