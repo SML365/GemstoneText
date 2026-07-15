@@ -22,6 +22,9 @@ class DirectHighlighter(QSyntaxHighlighter):
         self.variable_format = QTextCharFormat()
         self.variable_format.setForeground(QColor("#ff6eff"))
 
+        self.double_variable_format = QTextCharFormat()
+        self.double_variable_format.setForeground(QColor("#01bf78"))
+
         self.comment_format = QTextCharFormat()
         self.comment_format.setForeground(QColor("#8e8e8e"))
 
@@ -53,6 +56,7 @@ class DirectHighlighter(QSyntaxHighlighter):
         in_string = False
         in_argument = False
         in_variable = False
+        in_double_variable = False
         in_comment = False
 
         while i < len(text):
@@ -68,13 +72,13 @@ class DirectHighlighter(QSyntaxHighlighter):
                     self.comment_format,
                 )
 
-            if char == "(" and not in_comment:
+            if char in "([" and not in_comment:
                 in_argument = True
 
-            if char == ")":
+            if char in ")]":
                 in_argument = False
 
-            if in_argument or char == ")" and not in_string and not in_comment:
+            if in_argument or char in ")]" and not in_string and not in_comment:
                 self.setFormat(
                     i,
                     1,
@@ -93,15 +97,31 @@ class DirectHighlighter(QSyntaxHighlighter):
 
             if char == "@" and not in_comment:
                 in_variable = True
+                if text[i - 1] == "@":
+                    in_variable = False
+                    in_double_variable = True
 
             if char in r'()[]{},. "':
                 in_variable = False
+                in_double_variable = False
 
             if in_variable and not in_comment:
                 self.setFormat(
                     i,
                     1,
                     self.variable_format,
+                )
+
+            if in_double_variable and not in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.double_variable_format,
+                )
+                self.setFormat(
+                    i - 1,
+                    1,
+                    self.double_variable_format,
                 )
 
             i += 1
@@ -114,6 +134,14 @@ class App(QMainWindow):
         # --- Window Setup --- #
         self.resize(900, 500)
         self.setMinimumSize(900, 500)
+        self.setStyleSheet(
+            """
+            QMainWindow
+            {
+                background-color: #1c1c1c;
+            }
+            """
+        )
 
         # --- QStackedWidget Setup - Make Multiple Pages --- #
         self.page_container = QStackedWidget()
