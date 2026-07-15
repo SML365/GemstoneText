@@ -216,7 +216,7 @@ class PythonHighlighter(QSyntaxHighlighter):
                 self.pre_keyword_format,
             ),
             (
-                QRegularExpression(r"\b(and|or|not|is|in|True|False|None|int|float|complex|str|dict|set|frozenset|bool|bytes|bytearray|memoryview|NoneType)\b"),
+                QRegularExpression(r"\b(and|or|not|is|in|True|False|None|int|float|complex|str|dict|set|frozenset|bool|bytes|bytearray|memoryview|NoneType|super|self)\b"),
                 self.post_keyword_format,
             )
         ]
@@ -292,14 +292,7 @@ class PythonHighlighter(QSyntaxHighlighter):
                     1,
                     self.operator_format,
                 )
-
-            if char == "f" and text[i - 1] == "l" and text[i - 2] == "e" and text[i - 3] == "s" and not in_comment and not in_string:
-                self.setFormat(
-                    i - 3,
-                    4,
-                    self.post_keyword_format,
-                )
-
+                
             i += 1
 
         if not in_string and not in_comment:
