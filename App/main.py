@@ -31,6 +31,9 @@ class DirectHighlighter(QSyntaxHighlighter):
         self.block_label_operator_format = QTextCharFormat()
         self.block_label_operator_format.setForeground(QColor("#fa5f58"))
 
+        self.arrow_format = QTextCharFormat()
+        self.arrow_format.setForeground(QColor("#f29901"))
+
         self.rules = [
             (
                 QRegularExpression(r"\b(paste|var|run|add|sub|mul|div|if|loop|length|concat|letter|contains|console|wait|random|hash|slice|enter|delete|replace|item|numof|use|break|sqrt|round|mod|color|else|type|exists|turbo|scope|build)\b"),
@@ -55,6 +58,7 @@ class DirectHighlighter(QSyntaxHighlighter):
         in_argument = False
         in_variable = False
         in_double_variable = False
+        in_arrow = False
         in_label = False
         in_comment = False
 
@@ -100,9 +104,11 @@ class DirectHighlighter(QSyntaxHighlighter):
                     in_variable = False
                     in_double_variable = True
 
-            if char in r'()[]{},. "':
+            if char in '()[]}{,. \n"':
+                in_string = False
                 in_variable = False
                 in_double_variable = False
+                in_arrow = False
                 in_label = False
 
             if in_variable and not in_comment:
@@ -124,17 +130,46 @@ class DirectHighlighter(QSyntaxHighlighter):
                     self.double_variable_format,
                 )
 
-            if char in "+-*/=<>!" and not in_string and not in_variable and not in_comment:
+            if char == "/" and not in_string and not in_variable and not in_comment:
                 in_label = True
 
             if char == r"\n" or char == "\n":
                 in_label = False
             
-            if in_label == True:
+            if in_label and not in_comment:
                 self.setFormat(
                     i,
                     1,
                     self.block_label_operator_format,
+                )
+
+            if char in "+-*/!=<>":
+                self.setFormat(
+                    i,
+                    1,
+                    self.block_label_operator_format,
+                )
+
+            if char == ">" and text[i - 1] == "=":
+                in_arrow = True
+
+            if in_arrow and not in_comment and not in_string:
+                self.setFormat(
+                    i,
+                    1,
+                    self.arrow_format,
+                )
+                self.setFormat(
+                    i - 1,
+                    1,
+                    self.arrow_format,
+                )
+
+            if char == ";" and not in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.arrow_format,
                 )
 
             i += 1
