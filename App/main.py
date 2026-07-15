@@ -105,7 +105,6 @@ class DirectHighlighter(QSyntaxHighlighter):
                     in_double_variable = True
 
             if char in '()[]}{,. \n"':
-                in_string = False
                 in_variable = False
                 in_double_variable = False
                 in_arrow = False
@@ -143,7 +142,7 @@ class DirectHighlighter(QSyntaxHighlighter):
                     self.block_label_operator_format,
                 )
 
-            if char in "+-*/!=<>":
+            if char in "+-*/!=<>" and not in_variable and not in_string and not in_comment:
                 self.setFormat(
                     i,
                     1,
