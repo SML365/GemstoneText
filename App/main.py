@@ -163,6 +163,7 @@ class Editor(QWidget):
         self.text_editor = QPlainTextEdit()
         self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
         self.text_editor.setTabChangesFocus(False)
+        self.text_editor.setCursorWidth(2)
 
         self.text_editor.setStyleSheet(
             """
@@ -180,7 +181,8 @@ class Editor(QWidget):
             self.text_editor.document()
         )
 
-        cursor = self.text_editor.textCursor()
+        self.line_number_area = QWidget(self)
+
 
         editor_layout = QVBoxLayout()
         editor_layout.addWidget(self.text_editor)
@@ -192,4 +194,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = App()
     window.show()
+    QApplication.setCursorFlashTime(0)
     sys.exit(app.exec())
