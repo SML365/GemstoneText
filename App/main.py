@@ -55,6 +55,7 @@ class DirectHighlighter(QSyntaxHighlighter):
         in_argument = False
         in_variable = False
         in_double_variable = False
+        in_label = False
         in_comment = False
 
         while i < len(text):
@@ -102,6 +103,7 @@ class DirectHighlighter(QSyntaxHighlighter):
             if char in r'()[]{},. "':
                 in_variable = False
                 in_double_variable = False
+                in_label = False
 
             if in_variable and not in_comment:
                 self.setFormat(
@@ -122,7 +124,13 @@ class DirectHighlighter(QSyntaxHighlighter):
                     self.double_variable_format,
                 )
 
-            if char in "+-*/=<>!" and not in_string and not in_variable:
+            if char in "+-*/=<>!" and not in_string and not in_variable and not in_comment:
+                in_label = True
+
+            if char == "\n":
+                in_label = False
+            
+            if in_label == True:
                 self.setFormat(
                     i,
                     1,
