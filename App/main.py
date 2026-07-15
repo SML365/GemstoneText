@@ -180,7 +180,7 @@ class Editor(QWidget):
                     border: none;
                     background-color: #1c1c1c;
                     font-family: Consolas;
-                    font-size: 32px;
+                    font-size: 30px;
                 }
             """
         )
