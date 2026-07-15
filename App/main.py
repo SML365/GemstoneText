@@ -127,7 +127,7 @@ class DirectHighlighter(QSyntaxHighlighter):
             if char in "+-*/=<>!" and not in_string and not in_variable and not in_comment:
                 in_label = True
 
-            if char == "\n":
+            if char == r"\n":
                 in_label = False
             
             if in_label == True:
