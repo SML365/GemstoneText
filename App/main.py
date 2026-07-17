@@ -1,9 +1,11 @@
 # --- Import Modules --- #
 
 import sys
+import os
+from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QPushButton
-from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QColor
-from PySide6.QtCore import QRegularExpression
+from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
+from PySide6.QtCore import QRegularExpression, QStandardPaths
 
 # --- Define Direct+ Syntax Highlighter --- #
 class DirectHighlighter(QSyntaxHighlighter):
@@ -415,6 +417,15 @@ class Settings(QWidget):
 # --- Main Loop --- #
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # --- Path Setup --- #
+    app.setApplicationName("GemstoneText")
+    app.setOrganizationName("SML365")
+    app_data = QStandardPaths.writableLocation(
+        QStandardPaths.AppLocalDataLocation
+    )
+    data_dir = Path(app_data)
+
     window = App()
     window.show()
     QApplication.setCursorFlashTime(0)
