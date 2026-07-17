@@ -1,7 +1,7 @@
 # --- Import Modules --- #
 
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QPlainTextEdit, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont, QColor
 from PySide6.QtCore import QRegularExpression
 
@@ -314,12 +314,11 @@ class PythonHighlighter(QSyntaxHighlighter):
                 self.colon_format
             )
 
-        if not in_string and not in_comment:
-            for expression, fmt in self.rules:
-                it = expression.globalMatch(text)
-
-                while it.hasNext():
-                    match = it.next()
+        for expression, fmt in self.rules:
+            it = expression.globalMatch(text)
+            while it.hasNext():
+                match = it.next()
+                if not in_string and not in_comment:
                     self.setFormat(
                         match.capturedStart(),
                         match.capturedLength(),
@@ -355,6 +354,15 @@ class Editor(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.button_stylesheet = """QPushButton {font-family: Consolas; font-size: 28px; background-color: none; border: none; color: #ababab; font-weight: 550; margin: 4px; margin-right: 18px;}"""
+
+        self.file_button = QPushButton("File")
+        self.file_button.setStyleSheet(self.button_stylesheet)
+        self.run_button = QPushButton("Run")
+        self.run_button.setStyleSheet(self.button_stylesheet)
+        self.settings_button = QPushButton("Settings")
+        self.settings_button.setStyleSheet(self.button_stylesheet)
+
         self.text_editor = QPlainTextEdit()
         self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
         self.text_editor.setTabChangesFocus(False)
@@ -378,10 +386,20 @@ class Editor(QWidget):
 
         self.line_number_area = QWidget(self)
 
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.file_button)
+        button_layout.addWidget(self.run_button)
+        button_layout.addWidget(self.settings_button)
+        button_layout.addStretch()
 
-        editor_layout = QVBoxLayout()
+        editor_layout = QHBoxLayout()
         editor_layout.addWidget(self.text_editor)
-        self.setLayout(editor_layout)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        main_layout.addLayout(editor_layout)
+
+        self.setLayout(main_layout)
             
 
 # --- Main Loop --- #
