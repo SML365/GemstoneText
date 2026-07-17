@@ -3,9 +3,12 @@
 import sys
 import os
 from pathlib import Path
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QStackedWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
 from PySide6.QtCore import QRegularExpression, QStandardPaths
+
+global button_stylesheet
+button_stylesheet = """QPushButton {font-family: Consolas; font-size: 28px; background-color: none; border: none; color: #ababab; font-weight: 550; margin: 4px; margin-right: 18px;}"""
 
 # --- Define Direct+ Syntax Highlighter --- #
 class DirectHighlighter(QSyntaxHighlighter):
@@ -345,12 +348,13 @@ class App(QMainWindow):
         )
 
         # --- QStackedWidget Setup - Make Multiple Pages --- #
-        self.page_container = QStackedWidget()
-        self.setCentralWidget(self.page_container)
-        self.page_container.addWidget(Editor())
-        self.page_container.addWidget(File())
-        self.page_container.addWidget(Settings())
-        self.page_container.setCurrentIndex(0)
+        global page_container
+        page_container = QStackedWidget()
+        self.setCentralWidget(page_container)
+        page_container.addWidget(Editor())
+        page_container.addWidget(File())
+        page_container.addWidget(Settings())
+        page_container.setCurrentIndex(0)
 
 
 # --- Text Editor Page --- #
@@ -358,14 +362,15 @@ class Editor(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.button_stylesheet = """QPushButton {font-family: Consolas; font-size: 28px; background-color: none; border: none; color: #ababab; font-weight: 550; margin: 4px; margin-right: 18px;}"""
-
         self.file_button = QPushButton("File")
-        self.file_button.setStyleSheet(self.button_stylesheet)
+        self.file_button.setStyleSheet(button_stylesheet)
+        self.file_button.clicked.connect(switch_page_file)
+
         self.run_button = QPushButton("Run")
-        self.run_button.setStyleSheet(self.button_stylesheet)
+        self.run_button.setStyleSheet(button_stylesheet)
+
         self.settings_button = QPushButton("Settings")
-        self.settings_button.setStyleSheet(self.button_stylesheet)
+        self.settings_button.setStyleSheet(button_stylesheet)
 
         self.text_editor = QPlainTextEdit()
         self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
@@ -409,10 +414,28 @@ class File(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.back_button = QPushButton("Back")
+        self.back_button.setStyleSheet(button_stylesheet)
+        self.back_button.clicked.connect(switch_page_editor)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.back_button)
+        button_layout.addStretch()
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        main_layout.addStretch()
+        self.setLayout(main_layout)
+
 class Settings(QWidget):
     def __init__(self):
         super().__init__()
+
+def switch_page_editor():
+    page_container.setCurrentIndex(0)
             
+def switch_page_file():
+    page_container.setCurrentIndex(1)
 
 # --- Main Loop --- #
 if __name__ == "__main__":
