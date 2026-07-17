@@ -346,6 +346,8 @@ class App(QMainWindow):
         self.page_container = QStackedWidget()
         self.setCentralWidget(self.page_container)
         self.page_container.addWidget(Editor())
+        self.page_container.addWidget(File())
+        self.page_container.addWidget(Settings())
         self.page_container.setCurrentIndex(0)
 
 
@@ -400,6 +402,14 @@ class Editor(QWidget):
         main_layout.addLayout(editor_layout)
 
         self.setLayout(main_layout)
+
+class File(QWidget):
+    def __init__(self):
+        super().__init__()
+
+class Settings(QWidget):
+    def __init__(self):
+        super().__init__()
             
 
 # --- Main Loop --- #
