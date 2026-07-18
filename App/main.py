@@ -371,6 +371,7 @@ class Editor(QWidget):
 
         self.settings_button = QPushButton("Settings")
         self.settings_button.setStyleSheet(button_stylesheet)
+        self.settings_button.clicked.connect(switch_page_settings)
 
         self.text_editor = QPlainTextEdit()
         self.text_editor.setPlaceholderText("welcome to gemstone text!\nbased on the direct+ text editor\ndocumentation: \nbug report: \nstart typing to dismiss this message.")
@@ -431,11 +432,27 @@ class Settings(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.back_button = QPushButton("Back")
+        self.back_button.setStyleSheet(button_stylesheet)
+        self.back_button.clicked.connect(switch_page_editor)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.back_button)
+        button_layout.addStretch()
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        main_layout.addStretch()
+        self.setLayout(main_layout)
+
 def switch_page_editor():
     page_container.setCurrentIndex(0)
             
 def switch_page_file():
     page_container.setCurrentIndex(1)
+
+def switch_page_settings():
+    page_container.setCurrentIndex(2)
 
 # --- Main Loop --- #
 if __name__ == "__main__":
