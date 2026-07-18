@@ -7,8 +7,12 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QStack
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
 from PySide6.QtCore import QRegularExpression, QStandardPaths
 
-global button_stylesheet
 button_stylesheet = """QPushButton {font-family: Consolas; font-size: 28px; background-color: none; border: none; color: #ababab; font-weight: 550; margin: 4px; margin-right: 18px;}"""
+title_stylesheet = """QLabel {font-family: Consolas; font-size: 56px; color: #FFFFFF; font-weight: 550; margin-left: 2px;}"""
+text_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #ababab; font-weight: 550; margin-left: 8px;}"""
+directplus_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #c786fc; font-weight: 550; margin-left: 8px;}"""
+python_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #fcdf86; font-weight: 550; margin-left: 8px;}"""
+c_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #86b1fc; font-weight: 550; margin-left: 8px;}"""
 
 # --- Define Direct+ Syntax Highlighter --- #
 class DirectHighlighter(QSyntaxHighlighter):
@@ -440,8 +444,29 @@ class Settings(QWidget):
         button_layout.addWidget(self.back_button)
         button_layout.addStretch()
 
+        self.title_text = QLabel("Settings")
+        self.title_text.setStyleSheet(title_stylesheet)
+
+        self.supported_languages_text = QLabel("\nSupported Languages:\n\nName        Extension     Syntax Coloring Support     Runtime Support")
+        self.supported_languages_text.setStyleSheet(text_stylesheet)
+
+        self.directplus_text = QLabel("Direct+     .dplus        Yes                         No")
+        self.directplus_text.setStyleSheet(directplus_stylesheet)
+        self.python_text = QLabel    ("Python      .py           Yes                         No")
+        self.python_text.setStyleSheet(python_stylesheet)
+        self.c_text = QLabel         ("C           .c            No                          No")
+        self.c_text.setStyleSheet(c_stylesheet)
+
+        body_layout = QVBoxLayout()
+        body_layout.addWidget(self.title_text)
+        body_layout.addWidget(self.supported_languages_text)
+        body_layout.addWidget(self.directplus_text)
+        body_layout.addWidget(self.python_text)
+        body_layout.addWidget(self.c_text)
+
         main_layout = QVBoxLayout()
         main_layout.addLayout(button_layout)
+        main_layout.addLayout(body_layout)
         main_layout.addStretch()
         self.setLayout(main_layout)
 
