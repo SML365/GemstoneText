@@ -334,6 +334,153 @@ class PythonHighlighter(QSyntaxHighlighter):
                         fmt,
                     )
 
+class CHighlighter(QSyntaxHighlighter):
+    def __init__(self, document):
+        super().__init__(document)
+
+        self.keyword_format = QTextCharFormat()
+        self.keyword_format.setForeground(QColor("#f4d37b"))
+
+        self.argument_format = QTextCharFormat()
+        self.argument_format.setForeground(QColor("#479fe1"))
+
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor("#70c501"))
+
+        self.function_format = QTextCharFormat()
+        self.function_format.setForeground(QColor("#ff6eff"))
+
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor("#8e8e8e"))
+
+        self.operator_format = QTextCharFormat()
+        self.operator_format.setForeground(QColor("#fa5f58"))
+
+        self.pre_keyword_format = QTextCharFormat()
+        self.pre_keyword_format.setForeground(QColor("#f29901"))
+
+        self.post_keyword_format = QTextCharFormat()
+        self.post_keyword_format.setForeground(QColor("#01bf78"))
+
+        self.colon_format = QTextCharFormat()
+        self.colon_format.setForeground(QColor("#FFFFFF"))
+        
+        self.rules = [
+            (
+                QRegularExpression(r"\b(if|else|switch|case|default|for|while|do|break|continue|goto|return|auto|register|static|extern|const|sizeof|typeof|volatile|enum|struct|union)\b"),
+                self.keyword_format,
+            ),
+            (
+                QRegularExpression(r"\b(char|int|float|double|void|short|long|signed|unsigned|#include)\b"),
+                self.pre_keyword_format,
+            ),
+        ]
+
+    def highlightBlock(self, text):
+        i = 0
+        in_string = False
+        in_argument = False
+        in_comment = False
+        quote_type = None
+        escaped = False
+
+        while i < len(text):
+            char = text[i]
+
+            if in_string:
+                self.setFormat(
+                    i,
+                    1,
+                    self.string_format,
+                )
+
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote_type:
+                    in_string = False
+                    quote_type = None
+
+                i += 1
+                continue
+
+            if char == "/" and text[i - 1] == "/" and not in_comment:
+                in_comment = True
+
+            if in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.comment_format,
+                )
+                i += 1
+                continue
+
+            if char in "([" and not in_comment:
+                in_argument = True
+
+            if char in ")]":
+                in_argument = False
+
+            if in_argument or char in ")]" and not in_string and not in_comment:
+                self.setFormat(
+                    i,
+                    1,
+                    self.argument_format,
+                )
+
+            if char in '"\'':
+                in_string = True
+                quote_type = char
+                self.setFormat(
+                    i,
+                    1,
+                    self.string_format,
+                )
+                i += 1
+                continue
+
+            if char in "+-*/=!<>":
+                self.setFormat(
+                    i,
+                    1,
+                    self.operator_format,
+                )
+                
+            i += 1
+
+        if not in_string and not in_comment:
+            function_matcher = QRegularExpression(r"\b(char|int|float|double|void|short|long|signed|unsigned)\s+([A-Za-z_][A-Za-z0-9_]*)")
+            function_it = function_matcher.globalMatch(text)
+
+            while function_it.hasNext():
+                match = function_it.next()
+                self.setFormat(
+                    match.capturedStart(2),
+                    match.capturedLength(2),
+                    self.function_format,
+                )
+
+        if "{" in text and not in_string and not in_comment:
+            self.setFormat(
+                text.rindex("{"),
+                1,
+                self.colon_format
+            )
+
+        for expression, fmt in self.rules:
+            it = expression.globalMatch(text)
+            while it.hasNext():
+                match = it.next()
+                if not in_string and not in_comment:
+                    self.setFormat(
+                        match.capturedStart(),
+                        match.capturedLength(),
+                        fmt,
+                    )    
+
+
 # --- Define Main Application Window --- #
 class App(QMainWindow):
     def __init__(self):
@@ -394,7 +541,7 @@ class Editor(QWidget):
             """
         )
 
-        self.syntax_highlighter = PythonHighlighter(
+        self.syntax_highlighter = CHighlighter(
             self.text_editor.document()
         )
 
