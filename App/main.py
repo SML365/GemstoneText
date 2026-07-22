@@ -2,6 +2,7 @@
 
 import sys
 import os
+import subprocess
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QStackedWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
@@ -505,6 +506,7 @@ class App(QMainWindow):
         page_container.addWidget(Editor())
         page_container.addWidget(File())
         page_container.addWidget(Settings())
+        page_container.addWidget(Console())
         page_container.setCurrentIndex(0)
 
 
@@ -519,6 +521,7 @@ class Editor(QWidget):
 
         self.run_button = QPushButton("Run")
         self.run_button.setStyleSheet(button_stylesheet)
+        self.run_button.clicked.connect(switch_page_run)
 
         self.settings_button = QPushButton("Settings")
         self.settings_button.setStyleSheet(button_stylesheet)
@@ -617,6 +620,39 @@ class Settings(QWidget):
         main_layout.addStretch()
         self.setLayout(main_layout)
 
+class Console(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.back_button = QPushButton("Back")
+        self.back_button.setStyleSheet(button_stylesheet)
+        self.back_button.clicked.connect(switch_page_editor)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.back_button)
+        button_layout.addStretch()
+
+        self.output_text = QLabel("")
+        self.output_text.setStyleSheet(text_stylesheet)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(button_layout)
+        main_layout.addStretch()
+        self.setLayout(main_layout)
+
+    def run_c():
+        try:
+            process = subprocess.Popen(
+                ["powershell", "-Command", "gcc"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+        except Exception as e:
+            # self.output_text.append(f"Execution Failed: {str(e)}\n")
+            
+        return process
+
 def switch_page_editor():
     page_container.setCurrentIndex(0)
             
@@ -625,6 +661,9 @@ def switch_page_file():
 
 def switch_page_settings():
     page_container.setCurrentIndex(2)
+
+def switch_page_run():
+    page_container.setCurrentIndex(3)
 
 # --- Main Loop --- #
 if __name__ == "__main__":
