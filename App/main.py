@@ -650,6 +650,7 @@ class Console(QWidget):
             )
         except Exception as e:
             # self.output_text.append(f"Execution Failed: {str(e)}\n")
+            pass
             
         return process
 
