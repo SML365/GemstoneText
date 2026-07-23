@@ -15,6 +15,11 @@ directplus_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color
 python_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #fcdf86; font-weight: 550; margin-left: 8px;}"""
 c_stylesheet = """QLabel {font-family: Consolas; font-size: 28px; color: #86b1fc; font-weight: 550; margin-left: 8px;}"""
 
+app_data = QStandardPaths.writableLocation(
+        QStandardPaths.AppLocalDataLocation
+    )
+data_dir = Path(app_data)
+
 # --- Define Direct+ Syntax Highlighter --- #
 class DirectHighlighter(QSyntaxHighlighter):
     def __init__(self, document):
@@ -573,8 +578,14 @@ class File(QWidget):
         self.back_button.setStyleSheet(button_stylesheet)
         self.back_button.clicked.connect(switch_page_editor)
 
+        self.new_file_button = QPushButton("New")
+        self.new_file_button.setStyleSheet(button_stylesheet)
+        self.new_file_button.clicked.connect(switch_page_editor)
+
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.back_button)
+        button_layout.addWidget(self.new_file_button)
         button_layout.addStretch()
 
         main_layout = QVBoxLayout()
@@ -673,10 +684,6 @@ if __name__ == "__main__":
     # --- Path Setup --- #
     app.setApplicationName("GemstoneText")
     app.setOrganizationName("SML365")
-    app_data = QStandardPaths.writableLocation(
-        QStandardPaths.AppLocalDataLocation
-    )
-    data_dir = Path(app_data)
 
     window = App()
     window.show()
